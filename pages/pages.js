@@ -261,7 +261,7 @@ var loadPage = function() {
 				rootPath: rootPath
 			});
 			if (!report.passes.length) {
-				$('<li class="message"><strong>Oops!</strong> You don\'t have any of the recommended features for your open source project!</li>').appendTo('.failed-features');
+				$('<li class="message"><strong>Oops!</strong> You don\'t have any of the recommended features for your open source project!</li>').appendTo('.failed-features'); // TODO Add suggestions?
 			}
 
 			if (!report.failures.length) {
@@ -278,16 +278,61 @@ var loadPage = function() {
 			report.passes.forEach(function(pass) {
 				$('<li><i class="fa fa-check tick"></i> ' + pass.message + '</li>').appendTo(reportElement.find('.passed-features'));
 			});
-			report.failures.forEach(function(failure) {
+			report.failures.forEach(function(failure, i) {
 				var failureMessage = failure.message;
+				var failureDesc = '';
 				if (failure.details && failure.details.url && failure.details.title) {
 					failureMessage += ': <span class="failure-details"><a href="' + failure.details.url + '" target="_blank">' + failure.details.title + '</a></span>';
 				}
 				if (failure.details && failure.details.suggestion) {
 					failureMessage += '<span class="failure-suggestion">' + failure.details.suggestion + '</span>';
+					// failureDesc = failure.details.suggestion;
+				} else {
+					switch (failureMessage) {
+						case 'Readme document':
+							failureDesc = 'Oranges are $0.59 a pound.';
+							break;
+						case '.gitignore file':
+							failureDesc = 'Oranges are $0.59 a pound.';
+							break;
+						case 'All open issues have been acknowledged':
+							failureDesc = 'Oranges are $0.59 a pound.';
+							break;
+						case 'Contributing document':
+							failureDesc = '<p>The contributing guide is a file which explains to any would-be contributors some important things they should know before they open an issue, fork the repo or create pull request. It is often simply called <code>CONTRIBUTING</code> without an extension, but some people prefer to use Markdown (<code>.md</code> or <code>.markdown</code>) or <code>.txt</code>.</p><p>Some of the things which should be included in your contributing guide are:</p><ul><li>The goal of the project. To make sure contributors don&rsquo;t open issues which are way outside of the scope of the project, any pre-determined limitations of the project should be outlined here by explaining what the project intends to achieve.</li><li>Coding style guidelines. E.g. variable naming conventions, architectural patterns used, indent characters used.</li><li>Test-writing guidelines. E.g. BDD-style, end-to-end, extent of coverage.</li></ul>';
+							break;
+						case 'License document':
+							failureDesc = '<p>The licence is a file which explains to any users or would-be contributors how they can reuse your code or project. It is often simply called <code>LICENSE</code> without an extension, but some people prefer to use <code>.txt</code>.</p><p>If you are unsure which licence to choose for your project then <a href="http://choosealicense.com/">Choosealicense.com</a> by GitHub attempts to demystify the licence selection process.</p><p>If you want to share your work with others, please consider choosing an open source license.</p>';
+							break;
+						case 'Changelog document':
+							failureDesc = 'Bananas are $0.48 a pound.';
+							break;
+						case 'Test suite':
+							failureDesc = 'Cherries are $3.00 a pound.';
+							break;
+						case 'No tags':
+							// failureDesc = 'Before releasing a new version, create a tag to represent the code at the point of that release.';
+							break;
+					}
 				}
-				$('<li><i class="fa fa-exclamation-triangle cross"></i> ' + failureMessage + '</li>').appendTo(reportElement.find('.failed-features'));
+				var accordionElem = '<div class="panel panel-default">' +
+					'<div class="panel-heading" role="tab" id="heading' + i + '">' +
+						'<h4 class="panel-title">' +
+							'<i class="fa fa-exclamation-triangle cross"></i> <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse' + i + '" aria-expanded="false" aria-controls="collapse' + i + '">' +
+								failureMessage +
+							'</a>' +
+						'</h4>' +
+					'</div>' +
+					'<div id="collapse' + i + '" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading' + i + '"><div class="panel-body">' + failureDesc + '</div></div>' +
+				'</div>';
+				$(accordionElem).appendTo(reportElement.find('.failed-features')); // TODO Add suggestion?
 			});
+
+			$('.failed-features')
+				.addClass('panel-group')
+				.attr('aria-multiselectable', 'true')
+				.attr('role', 'tablist' )
+				.attr('id', 'accordion-failed');
 
 			$('.autoselect-next').click(function (e) {
 				var textarea = $(this).next('textarea').get(0);
